@@ -794,6 +794,17 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * constructor返回的是一个新的指针
 
+## local state
+
+* me：可能是因为python没有声明过程
+* 对于nonlocal：一个函数每次调用都会生成一个新的frame（其中的local data 都是全新的），但是其parent frame不变，因此parent frame中可以存储一些可以保留操作过程的变量
+
+*  The `nonlocal` statement indicates that the name appears somewhere in the environment other than the first (local) frame or the last (global) frame.
+* If `balance` has not previously been bound to a value, then the `nonlocal` statement will give an error.
+* within the body of a function, all instances of a name must refer to the same frame.This restriction allows Python to pre-compute which frame contains each name before executing the body of a function. When this restriction is violated, a confusing error message results. 
+* In fact, assignment statements already had a dual role: they either created new bindings or re-bound existing names.
+* . As we study interpreter design, we will see that pre-computing facts about a function body before executing it is quite common.
+
 # lab&&hw&&perplex
 
 * `float('inf')`：表示无穷大
