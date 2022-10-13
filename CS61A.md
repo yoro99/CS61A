@@ -10,6 +10,9 @@
 > #!/usr/bin/python3
 > # -*- coding: windows-1252 -*-
 > ```
+>
+> * vscode扩展
+>   * PEP8：格式化代码，`Shift + Alt + F`
 
 # week1
 
@@ -21,6 +24,7 @@
 > * `python ok --score --local`可以查看每个问题的成绩
 > * `C^c`可以在shell中中断python运行（infinite loop）
 > * 可视化运行python代码的[website](https://pythontutor.com/composingprograms.html#mode=edit)
+> * `help(function_name)`：可以查看具体函数的详情
 
 ## lecture1
 
@@ -39,13 +43,13 @@ Expand-Archive -Force lab00.zip  # powershell解压文件
 start .  # 打开当前的文件夹
 ```
 
-- `ls`: **l**i**s**ts all files in the current directory
+- `ls`: lists all files in the current directory
 
-- `cd <path to directory>`: **c**hange into the specified **d**irectory
+- `cd <path to directory>`: change into the specified directory
 
-- `mkdir <directory name> `: **m**a**k**e a new **dir**ectory with the given name
+- `mkdir <directory name> `: make a new directory with the given name
 
-- `mv <source path> <destination path> `: **m**o**v**e the file at the given source to the given destination
+- `mv <source path> <destination path> `: move the file at the given source to the given destination
 
 - **debug**（`assert`、`doctest`、`print`）：
 
@@ -118,6 +122,8 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * 全局变量会影响包含它的函数的返回值
 
+* **python在一个frame内不分什么局部变量，即使使用for之后其中的迭代元素也存在于frame中**
+
 * `from file1.pyfile import func`在shell，中引用某python文件中的函数，python文件不用加.py后缀
 
 * **变量与右边的结果值绑定**
@@ -153,7 +159,29 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * **def**一个函数在环境图中是**先创造一个函数对象（指定名字，参数和父环境/def所在的框架），在绑定到当前框架的一个name中（通过pointer）**
 
-* 函数中的参数可以设置默认值，（只能从最后的参数开始？）
+* 函数中的**参数**[函数的参数 - 廖雪峰的官方网站 (liaoxuefeng.com)](https://www.liaoxuefeng.com/wiki/1016959663602400/1017261630425888)
+
+  * 可以设置默认值，放在后面
+
+  * 可变参数`*args`，传入后以tuple显示，如果要传入list和tuple在前面加`*`
+
+  * 关键字参数`**kw`，键值对形式传入，传入后以dictionary显示
+
+  * 命名关键字（传入时必须说明参数名）`def person(name, age, *, city, job):/def person(name, age, *args, city, job):`
+
+  * 参数定义的顺序必须是：必选参数、默认参数、可变参数、命名关键字参数和关键字参数；复合传参的例子：
+
+    ```python
+    def f2(a, b, c=0, *, d, **kw):
+        print('a =', a, 'b =', b, 'c =', c, 'd =', d, 'kw =', kw)
+        
+    >>> f2(1, 2, d=99, ext=None)
+    a = 1 b = 2 c = 0 d = 99 kw = {'ext': None}
+    >>> args = (1, 2, 3)
+    >>> kw = {'d': 88, 'x': '#'}
+    >>> f2(*args, **kw)
+    a = 1 b = 2 c = 3 d = 88 kw = {'x': '#'}
+    ```
 
 * `python -i ex.py`可以用于解释都是函数的文件，以**交互**的形式测试
 
@@ -249,7 +277,7 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * **lambda表达式**
 
-  *  A lambda expression evaluates to a function that has a single return expression as its body. Assignment and control statements are not allowed.
+  *  A lambda expression evaluates to a function that has **a single return expression as its body**. Assignment and control statements are not allowed.
 
   * the result of a lambda expression is a function 
 
@@ -303,7 +331,7 @@ Numbers may be combined with mathematical operators to form compound expressions
   3. They may be returned as the results of functions.
   4. They may be included in data structures.
 
-* **Decorators装饰器**
+* **Decorators装饰器！：**
 
   * decorators are used for **tracing**
 
@@ -319,7 +347,7 @@ Numbers may be combined with mathematical operators to form compound expressions
 
   * selecting which functions to call when a program is run from the command line.（？？？）
 
-  * 表示为@符号后面跟着封装的函数名，在def执行时会**先进行封装**，再将**原函数名绑定到封装的返回结果中**
+  * 表示为@符号后面跟着封装的函数名，在def执行时会**先进行封装**，再将**原函数名绑定到封装的返回结果中（装饰器的位置需要在被装饰函数的前部）**
 
     ```python
     def trace(fn):       # 参数为函数
@@ -332,6 +360,46 @@ Numbers may be combined with mathematical operators to form compound expressions
     	return 3 * x
     res = triple(12)
     ```
+    
+  * **装饰递归函数：**递归函数体**内**的出现的位置都会转化为被装饰后的函数
+
+  * 多重装饰器：多层装饰器在装饰的时候，它的顺序是**由下往上**，而在执行的时候，它的顺序由**上到下**
+
+    ```python
+    '语法糖会将紧挨着的被装饰对象的名字当做参数自动传入装饰器函数中'
+    #代码示例：
+    def outter1(func1):
+        print('加载了outter1')
+        def wrapper1(*args, **kwargs):
+            print('执行了wrapper1')
+            res1 = func1(*args, **kwargs)
+            return res1
+        return wrapper1
+    
+    def outter2(func2):
+        print('加载了outter2')
+        def wrapper2(*args, **kwargs):
+            print('执行了wrapper2')
+            res2 = func2(*args, **kwargs)
+            return res2
+        return wrapper2
+    
+    @outter1
+    @outter2
+    def index():
+        print('from index')
+        
+    #输出结果：
+    加载了outter2
+    加载了outter1
+    执行了wrapper1
+    执行了wrapper2
+    from index
+    ```
+
+  * **Count和Memoization：**下例中count(fib)每个n只会调用一次，memo(fib)中会检查是否存在（而多次调用，存在则不会递归调用的了）
+
+    ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220905203338.png)
 
 * **self reference**：函数的返回值是本身
 
@@ -538,9 +606,17 @@ Numbers may be combined with mathematical operators to form compound expressions
       f() # 3
       ```
 
-  * len
+  * len：返回长度
 
-  * 切片
+  * 索引：index -n 等于 len(l) - n，**即索引为-1时就是最后一个元素**
+
+    * 索引`array[n][m][k] `等价于`array[n,m,k]`
+
+  * **切片**：形式`seq[begin:end:step]`，**create a new list!**
+
+    * step是在**最后位置**，如果**负数是从结尾到开头，默认值为1**
+    * **省略的值为默认值**`[0::2]`：则begin = 1，end为长度，step为2！
+    * `...`：表示其他维度不变，代替切片操作前/后面所有的`:`，即`[:,:,2]`和`[... , 2]`的输出等价
 
   * in：对string类型特别，可以查看多个元素`'yang' in 'yangwei'`
 
@@ -578,14 +654,24 @@ Numbers may be combined with mathematical operators to form compound expressions
     '''
     ```
 
-  * 内置的聚合函数：`max`第二个参数如果是func返回的是列表中带入函数最大的列表中的值（与之对应的有`min`）：与`all`对应的是`any`，只要有一个True即可
+  * **内置的聚合函数**：`max`第二个参数如果是func返回的是列表中带入函数最大的列表中的值（与之对应的有`min`）：与`all`对应的是`any`，只要有一个True即可
 
     ```python
     >>>sum([[1,2],[3]],[])
     [1,2,3]
     ```
 
+    * 注意`max`/`min`用法要带关键词`key=`！可以加参数`default=`指定最小/大值不存在时（空seq）的默认返回值
+
     ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220613220259.png)
+
+    * me：**判断两个np.array或tensor是否相等使用all**（因为直接使用比较运算符会得到element-wise的结果）：
+
+      ```python
+      x = np.array([1,2,3])
+      y = np.array([1,2,2])
+      all(x == y) # 如果不相等输出False
+      ```
 
   * `.check(value)`：计算value第一次出现的下标（list，tuple可用）
 
@@ -593,7 +679,7 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * **list**（mutable sequence）
 
-  * **`is`用于判断是不是指向同一个mutable sequence（identity），`==`用于判断内容是不是相等（equality）**
+  * **`is`用于判断是不是指向同一个mutable sequence（identity，身份），`==`用于判断内容是不是相等（equality）**
 
     ```python
   suits = ['heart', 'diamond', 'spade', 'club']
@@ -619,7 +705,7 @@ Numbers may be combined with mathematical operators to form compound expressions
     x = getitem(pair,0) # m3
     ```
 
-  * 可以使用乘法和加法
+  * 可以使用乘法和加法，会**create a new list ！！！**
 
     ```python
     >>> [1]+[2]*2
@@ -641,11 +727,11 @@ Numbers may be combined with mathematical operators to form compound expressions
   * `range(a)`：范围[0,a)
   * `range(a,b)`：范围[a,b)
 
-* **string**
+* **string**（immutable sequence）
 
   * `ord('A') # 65`：得到字符的ascii码值；
 
-  * `.strip()/.lstrip()/.rstrip()`：只包含一个参数，删除首尾/首/尾指定字符
+  * `.strip()/.lstrip()/.rstrip()`：只包含一个参数，删除首尾/首/尾指定字符；如果不指定参数：**默认为所有的空字符，包括空格、换行(\n)、制表符(\t)等。**
 
     ```python
     str1="0002300000"
@@ -684,11 +770,23 @@ Numbers may be combined with mathematical operators to form compound expressions
     '00023'
     ```
 
+    * `</>/^`：表示左对齐/右对齐/居中
+
+  * 使用`in`检查是否包含字串**：
+
+    ```python
+    s1 = 'yang wei'
+    s2 = 'yang'
+    s2 in s1 # True
+    ```
+
   * 大小写转化：`'STR'.lower()/'str'.upper()`；大小写相互转化`'Str'.swapcase()`
 
   * 对指定子串计数：`'STRSTR'.count('STR')`
 
   * **拆分键值对构造词典`split()`：**解析url的请求参数(query parameters)
+
+    * `split()`：如果分隔符为空，**默认为所有的空字符，包括空格、换行(\n)、制表符(\t)等。（会将单词间*所有*空格都不算入，注意和单个空格的行为不同）**
 
     ```python
     >>> query = 'user=pilgrim&database=master&password=PapayaWhip'
@@ -705,6 +803,20 @@ Numbers may be combined with mathematical operators to form compound expressions
 
   * `str.encode('type')`：字符串编码为bytes对象（一连串十六进制的数值，形式`b'\xe6\xb7\xb1\xe5\x85\xa5 Python'`）；`bytes.decode('type')`：bytes解码为字符串
 
+  * 标点符号
+
+    ```python
+    import string
+    string.punctuation # 返回所有标点符号的字符串
+    ```
+    
+    * **除去标点符号，sample：(原理？)**
+    
+    ```python
+    punctuation_remover = str.maketrans('','',string.punctuation)
+    'i ? like you?'.strip().translate(puntctuation_remover)
+    ```
+
 * **tuple**（immutable sequence），内容不可以改变
 
   * **1个元素的tuple**：`(1,)`和0个元素的tuple：`()或tuple()`
@@ -716,7 +828,7 @@ Numbers may be combined with mathematical operators to form compound expressions
     t[2].pop()
     ```
 
-* **dictionaries**（immutable sequence）
+* **dictionaries**（mutable sequence）
 
   * **key不能是list或者dictionary或者any mutable type**（**tuple**可以，但是tuple中的元素不可以为mutable type）
 
@@ -730,24 +842,43 @@ Numbers may be combined with mathematical operators to form compound expressions
     >>> numerals
     {'I': 1, 'X': 10, 'L': 50, 'V': 5}
     ```
-
-
-  * `.pop(key)`：**删除键，并返回对应的value**
-
-  * dictionary comprehension（和list comprehension相似）
-
+    
+    * `.pop(key)`：**删除键，并返回对应的value**
+  
+    * dictionary comprehension（和list comprehension相似）
+  
+  ```python
+  {x:x*x for x in range(2)}
+  # {0:0,1:1,2:4}
+  ```
+  
+    * 对一个list，如果每个元素都是pair`[x,y] or (x,y)`，可以使用强制类型转换`dict()`
+  
+    * `.get(key,default_v)`：**如果存在key值返回对应的value（可以设为None），否则返回defaul_v**（me：可以用于if）
+  
+    * `key in dict`：`in`可以判断一个key在不在dictionary中
+  
+    * 内置方法，`.keys() .values() .items()`，（me：对其返回值使用list强制类型转换为list）,**返回的都是iterator**
+  
+      <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220612211010.png" style="zoom: 67%;" />
+      
+  * **for迭代时**，me：对于第三种方式`a,b`的形式应该是一个tuple，而字典一个键值对不是以tuple存在的
+  
     ```python
-    {x:x*x for x in range(2)}
-    # {0:0,1:1,2:4}
+    for a in disc:  # 等价于keys()
+    	print(a)
+    for a,b in disc.items(): # 同时迭代键值
+    	print(a,b)
+    for a,b in disc:  # 错误！！！！！！！！！！！！！
+    	print(a,b)
     ```
+  
+* **set**（mutable sequence）
 
-  * 对一个list，如果每个元素都是pair`[x,y] or (x,y)`，可以使用强制类型转换`dict()`
-
-  * `.get(key,default_v)`：**如果存在key值返回对应的value，否则返回defaul_v**（me：可以用于if）
-
-  * 内置方法，`.keys() .values() .items()`，（me：对其返回值使用list强制类型转换为list）,**返回的都是iterator**
-
-    <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220612211010.png" style="zoom: 67%;" />
+  * 对应有一个**frozenset**，是immutable的，包含除了mutation method以外所有的set的method
+  * 不能包括mutable data（list，dictionaries，or other set，这些值都是 **unhashable**）
+  * <img src="C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220906114112841.png" alt="image-20220906114112841" style="zoom: 50%;" />
+  * set("string")：返回字符串中所有字符组成的set`{'s','t','r','i','n','g'}`
 
 * 数据抽象边界，高层的函数只使用第一层的函数实现
 
@@ -801,16 +932,32 @@ Numbers may be combined with mathematical operators to form compound expressions
     		print('handle',e)
     ```
 
+* raise：抛出异常，异常可以使用带字符串说明，也可以什么都不带
+
+  ```python
+   if not (0 < n < 4000):
+          raise OutOfRangeError('number out of range (must be 1..3999)')
+  if not isinstance(n, int):                                          ①
+          raise NotIntegerError
+  ```
+
+  * 抛出的区别（不是上面那个demo）：
+
+    <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220927222554.png" style="zoom:80%;" />
 
 ## ？Tree
 
 * constructor返回的是一个新的指针
 
+# Week4
+
 ## local state
 
 * me：可能是因为python没有声明过程
 
-* 对于nonlocal：一个函数每次调用都会生成一个新的frame（其中的local data 都是全新的），但是其parent frame不变，因此parent frame中可以存储一些可以保留操作过程的变量（**可以使用mutable value去实现和nonlocal相同的效果**）
+* python中赋值默认是绑定到一个**新的局部变量**的过程（没有其他声明的时）
+
+* 对于nonlocal：一个函数每次调用都会生成一个新的frame（其中的local data 都是全新的），但是其parent frame不变，因此parent frame中可以存储一些可以保留操作过程的变量（**可以使用mutable value去实现和nonlocal相同的效果！！！**）
 
 * The `nonlocal` statement indicates that the name appears somewhere in the environment other than the first (local) frame or the last (global) frame.（assignment语句的默认功能是将等式右侧的值绑定到当前框架）
 
@@ -822,7 +969,7 @@ Numbers may be combined with mathematical operators to form compound expressions
 
 * In fact, assignment statements already had a dual role: they either created new bindings or re-bound existing names.
 
-* .As we study interpreter design, we will see that pre-computing facts about a function body before executing it is quite common.
+* As we study interpreter design, we will see that pre-computing facts about a function body before executing it is quite common.
 
 * Referential Transparency, Lost：函数的调用会影响相同函数的调用结果（me：在使用nonlocal的时候注意）
 
@@ -950,7 +1097,7 @@ Numbers may be combined with mathematical operators to form compound expressions
 
   * reversed：返回原sequence反向的iterator
 
-* 一个iterator迭代完成后，在next就会一直抛出StopIteration exception；通常在一个iterator使用完成之后如果还要迭代都是创建一个新的iterator
+  * 一个iterator迭代完成后，在next就会一直抛出`StopIteration` exception；通常在一个iterator使用完成之后如果还要迭代都是创建一个新的iterator
 
 * **！ for statements**
 
@@ -978,10 +1125,12 @@ Numbers may be combined with mathematical operators to form compound expressions
     2
     3
     ```
+  
+  * `StopIteration`：for循环检测到这个异常会**自动停止并且不会中断**程序，所以`__iter__`在满足迭代结束条件时要加`raise StopIteration`
 
 ### Genrators
 
-* 只要函数体中有yield就会被当作Generator function，**返回Generator（也是iterator）**，用于进行延迟计算
+* 只要函数体中有yield就会被当作Generator function，**返回Generator（也是iterator）**，用于进行延迟计算（**调用函数generator函数相当于创建一个生成器对象，不会执行函数体里的语句**，`next`进行迭代时才会执行，每次执行到`yield`停止**并保存变量和局部数据**，一般配合for语句使用）
 
 * The generator **does not start executing any of the body statements** of its generator function until the first time `__next__` is invoked. The generator raises a `StopIteration` exception whenever its generator function returns.
 
@@ -1000,9 +1149,351 @@ Numbers may be combined with mathematical operators to form compound expressions
       	yield from substring(s[1:])
   ```
 
+* **note：**生成器执行到函数结束就会自动跳出循环了，所以不需要`StopIteration`，一般生成器要么有个循环中产生`yield`，或者递归（如上）
+* 将一个生成器传递给 `list()` 函数，它将遍历整个生成器（就像前例中的 `for` 循环）并返回所有数值的列表。
+
+# Week5 Class
+
+> Tree Class&List  Class见2.9
+
+* `class`的`<suite>`里的assigment语句和def都会变成的**class attributes**，instance的`self`设立的是**object attributes**
+
+  * class attribute对所有同类的instances相同
+
+  * **self就是实例**
+
+  * `__init__()` 方法调用时，对象**已经创建了**，你已经有了一个合法类对象的引用。
+
+  * 访问顺序：instance的dot表达式先查找object attribute再查找class attribute，再查找基类属性
+
+  * instance不能修改class attribute，如果对class attribute使用赋值语句修改**会生成一个对应instance attribute**
+
+    ```python
+    class Exm:
+    	at1 = 1
+    a = Exm()
+  a.at1 = 2 # 变成a的instance attribute，不影响其他instance访问class attribute
+    ```
+
+* **dot notation**获取来自instance或者对应class里的attributes，先**evaluate左侧是class还是instance**
+
+* **method = object + Function：method会自动绑定dot表达式左侧的实例到参数中**，即：
+
+  * dot表达式会先判定左侧的是instance还是class
+  * 如果是instance可以自动绑定到self
+  * 如果是class，调用的是function，要传入instance
+
+* `getattr(obj_name,'attr_name')/hasattr(obj_name,'attr_name')`获取/查看类或者对象中对应的属性
+
+* `isinstance(instance_name, class_name)`：检查对应实例的类型是否是对应类或子类
+
+* **Inheritance：**
+
+  * ```python
+    class <name>(<base class>):
+    	<suite>
+    ```
+
+  * 子类会override与基类不同的属性，共享相同的属性（不用在子类中标明）
+
+  * Base class attributes aren‘t copied into subclasses（子类中没有的attributes回去基类中look up）
+
+  * 注意传入的self（是一个instance），`self.<attribute>`都会创建/修改instance attribute
+
+  * 有重载或重写吗？
+
+  * designing for Inheritance：
+
+    * Don't repeat yourself; use existing implementations.(使用base class attribute)
+    * inheritance represents is-a；composition represents has-a(e.g. bank instance has a attribute accounts)
+
+  * Multiple Inheritance：
+
+    * Complicated Inheritance不建议使用
+
+    * ```python
+      class <name>(<base class1>, <base class2>):
+      	<suite>
+      ```
+
+    * **attribute查找顺序**：根据继承顺序，**从左至右**，**逐层**查找
+
+* **Property Methods：**
+
+  * `@property decorator`：可以像调用属性一样调用方法
+
+  * `@<attribute>.setter`：可以用于模拟给属性赋值的行为，`<attribute>`必须存在于property method中
+
+    <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220905193637.png"  />
+
+* *？？？？？？？？？*![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220905200353.png)
+
+## Polymorphism（多态）
+
+* **polymorphic functions（多态函数）**：**适用于许多不同类型数据的函数**（如`repr/str`）
+  * **调用的是对应的class attribute**，而不是instance attribute（见下图）
+  * 没有`__str__`属性会调用`__repr__`替代
+  * ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220905234019.png)
+
+* **interface:**
+
+  * shared message：不同object classes中的有相同行为的attribute name
+
+  * 接口就是share message的**集合**，和他们的specification（me：**一系列类**中都实现的**同名同行为**的attribute）
+
+    ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220905234907.png)
+
+* **Special Method**（python的特点）：
+  * 左右两侧都有双下划线，并且定义了很多built-in operators
+
+  * ![image-20220906000445937](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220906000445937.png)
+
+  * 注意使用`__radd__`的情况
+
+  * ![image-20220906000818776](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220906000818776.png)
+
+  * **type dispatching**（检查参数的类型做出对应的操作），**type coercion**（强制类型转换）
+
+  * `__iter__`：一般如果class实现了`__next__`返回`self`(指定迭代的起始条件，类似于`self.x = 1`)
+
+  * `__class__`：返回object的类型，可以用于**object访问类属性：**
+
+    ```python
+    class LazyRules:
+        rules_filename = 'plural6-rules.txt'
+    r2.__class__.rules_filename   
+    ```
+
+* 所有object value都会产生两种字符串表示
+  
+  * `__repr__`：返回易被python interpreter识别的**字符串（即表达式本身）**，用于编译器交互界面的输出（`>>>repr(obect)`输出字符串，`>>>object`输出字符串内的内容）
+  * `__str__`：返回易被人类识别的**字符串**，用于print输出（`>>>str(obect)`输出字符串，`>>>print(object)`输出字符串内的内容）
+  * `__eval__`：参数是**字符串**表达式，会输出表达式的结果
+  * str和repr返回的字符串经常相等
+  
+* Modular design
+  * ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220906001434.png)
+  * 
+
+## other
+
+* 对于exponentiation（幂运算），将复杂度从O(n)降到O(logn)
+
+  ![image-20220905205150694](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220905205150694.png)
+
+* ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220906111853.png)
+
+# Week_6 Interpreter
+
+* ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220910155446.png)
+
+# other
+
+## 正则表达式
+
+* `import re`
+
+  ![image-20220912162411863](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220912162411863.png)
+
+  ![image-20220912162423810](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220912162423810.png)
+
+  * `[abc]/[^abc]`：匹配abc其一/除了abc之外的任意字符
+
+  <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20221008191555.png" style="zoom: 67%;" />
+
+* `re.search`匹配不成功什么都不返回，匹配成功返回一个object
+
+* `re.findall(正则表达式,string)`返回string中满足表达式的所有字符的list
+
+* 松散的正则表达式
+
+  * 需要传递`ree.VERBOSE`参数
+
+  * ![image-20220912162608592](C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20220912162608592.png)
+
+# Dive into python3
+
+* `sys,argv`：获取python脚本文件的时候命令行参数，来执行脚本里面的内容。第一个元素返回值是**编译命令后的**文件名
+
+  ```python
+  import sys
+  filename = sys.argv[0]
+  print filename
+  # python .\sys.py
+  # >>> .\sys.py  # 对应字符串值为'.\\sys.py'
+  import sys
+  filename = sys.argv[1]
+  print filename
+  # python sys.py yw
+  # >>> yw
+  ```
+
+## 单元测试
+
+* *测试驱动开发* 或 tdd：先写测试再开发
+
+* 需要导入的模块和main
+
+```python
+import test_func_file
+import unittest
+class ToRomanBadInput(unittest.TestCase):
+    def test_to_roman_known_values(self):           
+        '''to_roman should give known result with known input'''
+        for integer, numeral in self.known_values:
+            result = test_func_file.to_roman(integer)       
+            self.assertEqual(numeral, result)       
+    def test_too_large(self):
+        '''to_roman should fail with large input'''
+        self.assertRaises(roman3.OutOfRangeError, test_func_file.to_roman, 4000)  
+
+    def test_zero(self):
+        '''to_roman should fail with 0 input'''
+        self.assertRaises(roman3.OutOfRangeError, test_func_file.to_roman, 0)     
+
+    def test_negative(self):
+        '''to_roman should fail with negative input'''
+        self.assertRaises(roman3.OutOfRangeError, test_func_file.to_roman, -1)    
+if __name__ == '__main__':
+    unittest.main()
+```
+
+* 可以写好几个继承类去做单元测试也可以把测试方法写在一个类中
+* shell的命令`python testfile.py -v`：去编译测试单元在的文件
+* 测试单元的类中测试方法前缀必须为`test`
+
+* `OK/FAIL/ERROR`三种测试状态（不满足测试条件返回FAIL）
+* `self.assertEqual/self.assertRaises`：分别检测对应值的输出结果/抛出的异常（**即必须对异常的输入进行处理**）
+
+* 异常类的编写
+
+  ```python
+  class OutOfRangeError(ValueError): pass
+  class NotIntegerError(ValueError): pass
+  ```
+
+* 输出：会先输出每个测试方法结果，再输出FAIL/ERROR的详情
+
+  <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220927214341.png" style="zoom:80%;" />
+
+* **重构**是修改可运作代码，使其表现更佳的过程
+* 测试时可逆操作的输入输出可以相互比较来判断运行是否正确
+
+## 高级迭代器
+
+* `()`构造生成器，和使用`tuple()`不同（返回一个tuple）
+  * <img src="C:\Users\杨蔚\AppData\Roaming\Typora\typora-user-images\image-20221008200449225.png" alt="image-20221008200449225" style="zoom: 67%;" />
+
+* **排列**(有序)，返回一个迭代器，第一个参数是string或list，第二个参数是一个排列对的成员个数
+
+  ```python
+  import itertools                              
+  perms = itertools.permutations([1, 2, 3], 2)  
+  >>> next(perms)                                   
+  (1, 2)
+  ```
+
+  * 组合(有序)`itertools.combinations`，参数和用法同排列
+
+  * `itertools.product()`函数返回包含两个序列的笛卡尔乘积的迭代器。
+
+    <img src="https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20221008200937.png" style="zoom:50%;" />
+
+* `itertools.groupby()`：函数接受一个序列和一个key 函数, 并且返回一个生成**二元组**的**迭代器**。每一个二元组包含`key_function(each item)`的结果和另一个包含着所有共享这个key结果的元素的**迭代器**（**将序列中key()返回值相同的元素分为一组**）
+
+* `itertools.chain()`函数接受两个迭代器，返回一个迭代器，它包含第一个迭代器的所有内容，以及跟在后面的来自第二个迭代器的所有内容。(实际上，它接受任何数目的迭代器，并把它们按传入顺序串在一起。)
+
+*  `itertools.zip_longest(iter1，iter2)`函数在到达**最长的**序列的结尾的时候才停止, 对短序列结尾之后的元素填入`None`值.
+
+  * `zip`结合到最短长度就会停止
+
+* `'SEND + MORE == MONEY'.translate(translation_table)`：translation_table是一个dict，可以将字符串在字典中的key值转化为对应的value值（key和value需要为ASCII码，可以使用`ord`）
+
+* `eval('string')`：可以计算字符串形式的表达式的值（`eval('2 * 5') # 10`）
+
+* **`subprocess` 模块允许你执行任何shell命令并以字符串形式获得输出**。
+
+  * `"subprocess.getoutput('rm /some/random/file')"`
+
+  * 使用`__import__`以字符串表达式的形式导入模块`eval("__import__('subprocess').getoutput('rm /some/random/file')")`
+
+    ```python
+    >>> eval("__import__('math').sqrt(5)", {}, {})  ②
+    2.2360679774997898
+    ```
+
+* `__builtins__`：包含了“内建”函数，可以覆盖为None从而拒绝访问内建函数（如`__import__`）
+
+## 文件
+
+* windows的文件子目录`\`，linux和Macos的子目录为`/`
+
+* `locale.getpreferredencoding()`获得python环境的默认编码，可以在`open(...,encoding = )`中修改
+
+  * `mode = w/a`此参数决定读写方式，写会如果文件不存在会创建文件（`w`会覆盖原先内容）
+  * `\n`自己添加换行符
+
+* 打开文件对象的方法
+
+  * `read()`：读取文件剩下所有的内容，`read(int n)`返回后面的n个**字符**
+  * `seek(int n)`：定位到文件特定**字节**（**不可以定位到一个字符的中间字节再开始读取**）
+  * `tell()`：返回当前的**字节**位置
+
+* 使用`with`的对象
+
+  * `with object`：后面跟着一个创建的（文件，也可以是其他）对象
+  * 进入`with`时会调用`def __enter__(self):`，**该方法的返回值（self）赋值给`as`指向的变量！（没有`as`也可以不返回）**
+  * 退出`with`时会调用`def __exit__(self, *args):`，不管是否执行完with中的内容只要退出函数体都会调用此方法。**实际上，如果引发了例外，该例外信息将会被传递给 `__exit__()` 方法（可以防止发生意外时程序中断，但是文件没被关闭/打开文件的方式可能会使得其他程序不能访问）；**
+  * `with createObject() as o1,createObject() as o2:`从左到右执行，可以创建多个对象
+
+* 按行读取文件
+
+  * `f.readline()`
+
+  * ```python
+    with open('examples/favorite-people.txt', encoding='utf-8') as a_file:  ①
+        for a_line in a_file: 
+    ```
+
+* `io.StringIO("..")`：对文件相同的处理方式处理内存的字符串
+* `.gz`：windows下的一种压缩方式的文件后缀
+* 标准输入输出
+  
+  * `import sys/sys.stdout`：修改后一可以用于**重定向**
+
+## 序列化
+
+* me：就是将对象转化为某种格式进行可持久化存储
+* pickle文件（二进制文件，**python独有**）
+  * 需要以二进制的方式读写` with open('entry.pickle', 'rb') as f`
+  * `.dump`写入
+  * `.load`读出
+  * **可以直接不用转化读入一个对象/二进制数据**
+* json文件（文本文件，**跨语言**）
+  * 以dict的形式序列化数据
+  * 不同类型的数据在序列化结果的value如下
+  * ![](https://mdgraph-1301162508.cos.ap-shanghai.myqcloud.com/2022/20220930171347.png)
+  * `.dump/.load`写/读
+  * 写入时对object或者不在表格中的数据要转化为字符串或dict来作为序列化的value，并且load时需要转化为原先的形式：` json.dump(entry, f, default=customserializer.to_json)`可以设置instance类型检查和转换函数
+  * tuple如果作为value写入json文件会**变为list**，且再load时还是list
+
 # lab&&hw&&perplex
 
+* 关于模块`import`
+  * python文件可以作为模块，`import`时不加后缀名
+  * **对于`if __name__ == __main__`：**在import模块时，会执行模块中其他部分（**只执行一次**），顶层执行文件（主程序main program）的`__name__`为`__main__`，其他导入模块的`__name__`为**模块名**，可以控制模块中一些语句不被执行
+  * 内层和外层模块有`import`相同的模块时，模块将**只被导入一次（对比c/c++中的`#include`）**，随后被缓存了。如果导入一个已导入模块，将不会导致任何事情发生。因此对应模块中这段代码将只在第一此导入时运行
+  * 模块如果没有在if语句中的可执行语句会被执行
+
+* python中一切都是对象包括函数，在动态函数中使用外部参数值的技术称为 **闭合【closures】**
+
+* `pass`：相当于c/c++中`{}`，在空函数或者while/for中使用
+
+* `print(something,end='')`：指定输出结束是否换行
+
 * `float('inf')`：表示无穷大
+
+* `ord('c')`：返回字符的ascii码
 
 * 切片
 
@@ -1140,6 +1631,3 @@ Numbers may be combined with mathematical operators to form compound expressions
     '''
     ```
   
-    
-  
-    
